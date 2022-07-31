@@ -1,0 +1,60 @@
+experiment_name: "19-02-2022"
+
+data:
+  dataset: Human Part Segmentation
+  input_size: 384
+  csv_path: "/home/aime3/nail-segmentation-dali/csv_file"
+
+model:
+  type: segmentation_models_pytorch.Unet
+  encoder_name: timm-efficientnet-b4
+  encoder_weights: "noisy-student"
+  in_channels: 3
+  classes: 1
+
+dataloader_type: "kornia" # "kornia", "dali"
+training:
+  seed: 42
+  fold: 2
+  max_epochs: 300
+  mixed_precision: True
+  device: "cuda:0"
+  freeze_epochs: 1
+  learning_rate: 0.001
+  batch_size: 32
+  num_workers: 4
+
+testing:
+  fold: 2
+  phase: "test"
+  batch_size: 32
+  tta: True
+  mixed_precision: False
+  threshold: 0.39
+  device: "cuda:0"
+
+checkpoint_callback:
+  type: pytorch_lightning.callbacks.ModelCheckpoint
+  filename: "timm-efficientnet-b4"
+  monitor: valid_loss
+  verbose: True
+  save_top_k: 1
+  save_last: True
+  mode: min
+  dirpath: "models"
+
+trainer:
+  type: pytorch_lightning.Trainer
+  gpus: [0]
+  max_epochs: 300
+  benchmark: True
+  precision: 16
+  progress_bar_refresh_rate: 1
+  gradient_clip_val: 5.0
+  auto_lr_find: True
+  weights_summary: "top"
+  limit_train_batches: 1.0
+
+debug: False
+
+resume: False

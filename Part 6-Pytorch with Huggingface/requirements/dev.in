@@ -1,0 +1,27 @@
+opencv-python
+albumentations
+matplotlib
+pandas
+scikit-learn
+hydra-core
+addict
+timm
+pytorch-lightning
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.11.0+cu113
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torchvision==0.12.0+cu113
+torchsummary
+wandb
+pyyaml
+segmentation-models-pytorch
+onnxruntime
+onnx
+kornia
+pyyaml
+tornado
+safety
+scipy
+pillow
+tqdm
+black

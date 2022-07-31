@@ -1,0 +1,12 @@
+opencv-python
+albumentations
+matplotlib
+pandas
+segmentation-models
+scikit-learn
+addict
+tensorflow-gpu==2.5
+tensorflow-addons
+wandb
+pre-commit
+black

@@ -1,0 +1,8 @@
+name: nail
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+  - pip
+  - pip:
+      - pip-tools

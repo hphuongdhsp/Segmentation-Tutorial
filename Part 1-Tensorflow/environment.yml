@@ -1,0 +1,10 @@
+name: segmentation-tf
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - cudatoolkit=11.1
+  - python=3.8
+  - pip
+  - pip:
+      - pip-tools
