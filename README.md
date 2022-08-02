@@ -18,7 +18,7 @@ Let us summerize the main idea of each part.
 
 In this part we will introduce how to train a segmentation model by using the tensorflow platform. We will:
 
-- Using `segmentation_models` library to get the segmentation model.
+### Using `segmentation_models` library to get the segmentation model.
 
 **Segmentation models** is python library with Neural Networks for Image Segmentation based on Keras (Tensorflow) framework. This is the high level API, you need only some lines of code to create a Segmentation Neural Network, for example 
 
@@ -33,8 +33,7 @@ model = sm.Unet(
 )
 ```
 
-- Using `albumentation` library to do augmentation. 
-- 
+### Using `albumentation` library to do augmentation. 
 **Albumentations** is a Python library for fast and flexible image augmentations. Albumentations efficiently implements a rich variety of image transform operations that are optimized for performance, and does so while providing a concise, yet powerful image augmentation interface for different computer vision tasks, including object classification, segmentation, and detection.
 
 - How to combine `albumentation` with the tf.data loader
@@ -46,15 +45,26 @@ The tf.data API enables you to build complex input pipelines from simple, reusab
 
 This part we figure out how to combite the `tf.data` api and `albumentation`. 
 
-- Using mixed-precision to improve the training speed
-We introduce a simple tecnique that permit import the speed of training: `mixed precision`. Today, most models use the float32 dtype, which takes 32 bits of memory. However, there are two lower-precision dtypes, float16 and bfloat16, each which take 16 bits of memory instead. Modern accelerators can run operations faster in the 16-bit dtypes. We will introduce how to use  `mixed-precision` (mix float32 dtype and float16 dtype)
-- Using `tensorboard` or `wandb` to visualize training in a ML project
-
+### Using mixed-precision to improve the training speed
+We introduce a simple tecnique that permit import the speed of training: `mixed precision`. Today, most models use the float32 dtype, which takes 32 bits of memory. However, there are two lower-precision dtypes, float16 and bfloat16, each which take 16 bits of memory instead. Modern accelerators can run operations faster in the 16-bit dtypes. We will introduce how to use  `mixed-precision` (mix float32 dtype and float16 dtype) to accelerate the training task. 
+### Using `tensorboard` or `wandb` to visualize training in a ML project
+We also introduce some tools to monitori the evaluation of training task. 
 
 ------------------------------------------------
 ## How to use data balance in data pipeline loader
 
-In the second part, we will introduce a simple way to deal with the imbalanced data. The tutorial deals with the segmentation problem, but you can apply this technique to the classification problem too. 
+Base on the pipeline of the previous part, this part will introduce how to deal with a imbalanced data. 
+
+A classification data set with skewed class proportions is called imbalanced. Classes that make up a large proportion of the data set are called majority classes. Those that make up a smaller proportion are minority classes. 
+
+![](./imgs/imbalanced data.png)
+
+<!-- ![](https://habrastorage.org/webt/zg/xl/wb/zgxlwbdpbxtq57gzdqscq3tubws.png) -->
+
+In the semantic segmentation, we assume that the data we collected is from various sources (folders). The sources have a diffence of quality (skewed) and a difference quantity (maybe), or a difference types. Then we can also do balancing when loading the data, this may boost the performance of the model. 
+
+The Tutorial deals with the segmentation problem, but with a slight modifing, it also works with the classification problem. 
+
 
 ------------------------------------------------
 ## Traing deep learning models using Pytorch Lightining
@@ -63,24 +73,47 @@ In this part we will introduce how to use the Pytorch platform to train the segm
 
 We also introduce a segmentation library: `segmentation_models_pytorch` to build the segmentation model for the Pytorch platform.
 
+Similar to the `segmentation_models`, `segmentation_models_pytorch` is a high level API, it helps us build a sementic segmentation model with only some lines of code. 
+
+```
+import segmentation_models_pytorch as smp
+
+model = smp.Unet(
+    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+    encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+    in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+    classes=1,                      # model output channels (number of classes in your dataset)
+)
+```
+
+By using Pytorch Lightning, we can easy implement new SOTA methods in training with some lines of code. 
+
 ------------------------------------------------
 ## Data augmentation on the GPU
+**GPUs Are Fast! Datasets Are Your Bottleneck.** The fact is that  today these transforms are applied one input at a time on `CPUs`. This means that they are super slow. If your models allows you to, you could apply the same transforms to a batch of data at once on GPUs.
 
-This part will show how to perform augumentation on the GPU with `kornia` library. With this technique, we get a slight speed improvement.
+`Kornia` is a library that helps you do the augumentations in GPU memory. 
 
+![](https://habrastorage.org/webt/ew/tc/u7/ewtcu7o4gjurdfii2tx8ghmrkbq.jpeg)
+
+This part will show how to perform augumentation on the GPU with `kornia` library.
 ------------------------------------------------
 ## Speed up Dataloader by Using DALI
 
-To do image processing, we can also use the `DALI` library. The NVIDIA Data Loading Library (DALI) is a library for data loading and pre-processing to accelerate deep learning applications. It provides a collection of highly optimized building blocks for loading and processing image, video and audio data. It can be used as a portable drop-in replacement for built in data loaders and data iterators in popular deep learning frameworks. Data processing pipelines implemented using DALI are portable because they can easily be retargeted to TensorFlow, PyTorch, MXNet and PaddlePaddle.
+In this part we will `DALI` library. The NVIDIA Data Loading Library (DALI) is a library for data loading and pre-processing to accelerate deep learning applications. It provides a collection of highly optimized building blocks for loading and processing image, video and audio data. It can be used as a portable drop-in replacement for built in data loaders and data iterators in popular deep learning frameworks. Data processing pipelines implemented using DALI are portable because they can easily be retargeted to TensorFlow, PyTorch, MXNet and PaddlePaddle.
 
-In this part will detail how to combine DALI with Pytorch Lightning. 
+
+![](https://habrastorage.org/webt/7g/9t/dr/7g9tdr0yuwvtsssxi5l-jmup80q.png)
+
 
 ------------------------------------------------
 ## Pytorch Lightning with Hugging Face
 
 In the previous parts we used  the `segmentation_models_pytorch` to get the `segmentation model` for Pytorch platform. In this part, we will introduce very powerful library `transformers` that helps us easy to approach the state of the art of several tasks of the deep learning: NLP, Classification, ... 
 
-We will introduce the SegFormer model use it to the semantic segmentation models.
+We will introduce the SegFormer model use it to the semantic segmentation models. SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers. 
+
+![](https://habrastorage.org/webt/ya/al/tf/yaaltf5hfe8duuxihmrfmum6aea.png)
 
 ------------------------------------------------
 ## Train an Intance Segmentation Model with MMDetection
