@@ -11,19 +11,43 @@ The goal of the reposiroty is to introduce some tools, libraries to train the de
 Throgh all of topics, we will use the [Nail Segmentaion Dataset](https://www.kaggle.com/datasets/vpapenko/nails-segmentation). For the Nail Segmentation Dataset we will detail the semantic segmentation, we also tackle the instance segmentation problem in the last part with the awesome library `mmdetection`.
 
 
----------------------------------
-
 Let us summerize the main idea of each part.
 
 ------------------------------------------------
 ## Training deep learning models using Tensorflow platform
 
-In this part we will introduce how to train a segmentation model by using the tensorflow platform. We will through:
+In this part we will introduce how to train a segmentation model by using the tensorflow platform. We will:
 
-- Using `segmentation_models` library to get the segmentation model
-- Using `Albumentation` library to do augmentation. 
-- How to use the `albumentation` in the tf.data loader
+- Using `segmentation_models` library to get the segmentation model.
+
+**Segmentation models** is python library with Neural Networks for Image Segmentation based on Keras (Tensorflow) framework. This is the high level API, you need only some lines of code to create a Segmentation Neural Network, for example 
+
+```
+import segmentation_models as sm
+
+model = sm.Unet(
+    "efficientnetb4",
+    input_shape=(384, 384, 3),
+    encoder_weights="imagenet",
+    classes=1,
+)
+```
+
+- Using `albumentation` library to do augmentation. 
+- 
+**Albumentations** is a Python library for fast and flexible image augmentations. Albumentations efficiently implements a rich variety of image transform operations that are optimized for performance, and does so while providing a concise, yet powerful image augmentation interface for different computer vision tasks, including object classification, segmentation, and detection.
+
+- How to combine `albumentation` with the tf.data loader
+
+The tf.data API enables you to build complex input pipelines from simple, reusable pieces. `Tf.data` API also supports the augumentation task with family of function `tf.image`: 
+  -  tf.image.stateless_random_brightness
+  -  tf.image.stateless_random_flip_left_right
+  -  ...
+
+This part we figure out how to combite the `tf.data` api and `albumentation`. 
+
 - Using mixed-precision to improve the training speed
+We introduce a simple tecnique that permit import the speed of training: `mixed precision`. Today, most models use the float32 dtype, which takes 32 bits of memory. However, there are two lower-precision dtypes, float16 and bfloat16, each which take 16 bits of memory instead. Modern accelerators can run operations faster in the 16-bit dtypes. We will introduce how to use  `mixed-precision` (mix float32 dtype and float16 dtype)
 - Using `tensorboard` or `wandb` to visualize training in a ML project
 
 
