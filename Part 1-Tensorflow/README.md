@@ -97,7 +97,7 @@ Download the data from [link](https://drive.google.com/file/d/1qBLwdQeu9nvTw70E4
 ```python
 data_root = "/home/aime3/Documents/Phuong/nail-segmentation-dataset"
 ```
-#### You can also change the base_path directy in `--data_root` line of the `utils.py` file
+#### You can also change the data_root directy in `--data_root` line of the `utils.py` file
 
 The dataset with be stored at the "data_root", and were organized as the following
 

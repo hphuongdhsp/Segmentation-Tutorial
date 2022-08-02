@@ -14,7 +14,7 @@ Throgh all of topics, we will use the [Nail Segmentaion Dataset](https://www.kag
 Let us summerize the main idea of each part.
 
 ------------------------------------------------
-## Training deep learning models using Tensorflow platform
+# 1. Training deep learning models using Tensorflow platform
 
 In this part we will introduce how to train a segmentation model by using the tensorflow platform. We will:
 
@@ -51,25 +51,25 @@ We introduce a simple tecnique that permit import the speed of training: `mixed 
 We also introduce some tools to monitori the evaluation of training task. 
 
 ------------------------------------------------
-## How to use data balance in data pipeline loader
+# 2. How to use data balance in data pipeline loader
 
 Base on the pipeline of the previous part, this part will introduce how to deal with a imbalanced data. 
 
 A classification data set with skewed class proportions is called imbalanced. Classes that make up a large proportion of the data set are called majority classes. Those that make up a smaller proportion are minority classes. 
 
-![](./imgs/imbalanced data.png)
+<!-- ![](./imgs/imbalanced data.png) -->
 
-<!-- ![](https://habrastorage.org/webt/zg/xl/wb/zgxlwbdpbxtq57gzdqscq3tubws.png) -->
+![](https://habrastorage.org/webt/zg/xl/wb/zgxlwbdpbxtq57gzdqscq3tubws.png)
 
-In the semantic segmentation, we assume that the data we collected is from various sources (folders). The sources have a diffence of quality (skewed) and a difference quantity (maybe), or a difference types. Then we can also do balancing when loading the data, this may boost the performance of the model. 
+For the nail segmentation data, we assume that the data is collected from various sources (folders). Those sources have a diffence of quality (skewed) and a difference quantity (maybe), or a difference types. Then we can also do balancing when loading the data, this may boost the performance of the model. 
 
-The Tutorial deals with the segmentation problem, but with a slight modifing, it also works with the classification problem. 
+The Tutorial deals with the segmentation problem, but with a slight modifying, it also works with the classification problem. 
 
 
 ------------------------------------------------
-## Traing deep learning models using Pytorch Lightining
+# 3. Traing deep learning models using Pytorch Lightining
 
-In this part we will introduce how to use the Pytorch platform to train the segmentation model. In particular, we will use the Pytorch Lightning to speed up the training. 
+In this part we will introduce how to use the Pytorch platform to train the segmentation model. In particular, we will use the Pytorch Lightning to train the model. 
 
 We also introduce a segmentation library: `segmentation_models_pytorch` to build the segmentation model for the Pytorch platform.
 
@@ -86,10 +86,10 @@ model = smp.Unet(
 )
 ```
 
-By using Pytorch Lightning, we can easy implement new SOTA methods in training with some lines of code. 
+By using Pytorch Lightning, we can easy implement new SOTA methods of training with some lines of code. 
 
 ------------------------------------------------
-## Data augmentation on the GPU
+# 4. Data augmentation on the GPU
 **GPUs Are Fast! Datasets Are Your Bottleneck.** The fact is that  today these transforms are applied one input at a time on `CPUs`. This means that they are super slow. If your models allows you to, you could apply the same transforms to a batch of data at once on GPUs.
 
 `Kornia` is a library that helps you do the augumentations in GPU memory. 
@@ -98,7 +98,7 @@ By using Pytorch Lightning, we can easy implement new SOTA methods in training w
 
 This part will show how to perform augumentation on the GPU with `kornia` library.
 ------------------------------------------------
-## Speed up Dataloader by Using DALI
+# 5. Speed up Dataloader by Using DALI
 
 In this part we will `DALI` library. The NVIDIA Data Loading Library (DALI) is a library for data loading and pre-processing to accelerate deep learning applications. It provides a collection of highly optimized building blocks for loading and processing image, video and audio data. It can be used as a portable drop-in replacement for built in data loaders and data iterators in popular deep learning frameworks. Data processing pipelines implemented using DALI are portable because they can easily be retargeted to TensorFlow, PyTorch, MXNet and PaddlePaddle.
 
@@ -107,7 +107,7 @@ In this part we will `DALI` library. The NVIDIA Data Loading Library (DALI) is a
 
 
 ------------------------------------------------
-## Pytorch Lightning with Hugging Face
+# 6. Pytorch Lightning with Hugging Face
 
 In the previous parts we used  the `segmentation_models_pytorch` to get the `segmentation model` for Pytorch platform. In this part, we will introduce very powerful library `transformers` that helps us easy to approach the state of the art of several tasks of the deep learning: NLP, Classification, ... 
 
@@ -116,8 +116,24 @@ We will introduce the SegFormer model use it to the semantic segmentation models
 ![](https://habrastorage.org/webt/ya/al/tf/yaaltf5hfe8duuxihmrfmum6aea.png)
 
 ------------------------------------------------
-## Train an Intance Segmentation Model with MMDetection
+# 7. Train an Intance Segmentation Model with MMDetection
 
-The last part of the segmentation series, we will cover the intances segmentation model. We will recall some approaches for the instance segmentation problem. We also introduce a efficient library for the detection task `MMDetection`. For that, we will detail how to build the configuration for a training. 
+The last part of the segmentation series, we will cover the intances segmentation model. We will recall some approaches for the instance segmentation problem. We also introduce a efficient library for the detection task: `MMDetection`. MMDetection is an open source object detection toolbox based on PyTorch. 
+
+
+![](https://habrastorage.org/webt/o9/wk/ae/o9wkaedfqkbfmf1q7csc61mmtkk.png)
+
+Major features of mmdetection: 
+
+- Modular Design: One decomposes the detection framework into different components and one can easily construct a customized object detection framework by combining different modules.
+
+- Support of multiple frameworks out of box: The toolbox directly supports popular and contemporary detection frameworks, e.g. Faster RCNN, Mask RCNN, RetinaNet, etc.
+
+- High efficiency: All basic bbox and mask operations run on GPUs. The training speed is faster than or comparable to other codebases, including Detectron2, maskrcnn-benchmark and SimpleDet.
+
+- State of the art: The toolbox stems from the codebase developed by the MMDet team, who won COCO Detection Challenge in 2018, and we keep pushing it forward.
+
+
+
 
 
