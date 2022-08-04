@@ -188,7 +188,7 @@ if args.mixed_precision:
 ```
 Here `args.mixed_precision` is the boolen parameter for mixed_precision
 
-- Change the input data into tf.float16: 
+- Change the out data (input of model) into tf.float16: 
   
 When we load dataset, before do suffling and do batching we convert out data into float16. To do that, 
 ```python
