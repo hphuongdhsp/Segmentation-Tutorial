@@ -118,6 +118,18 @@ We will introduce the SegFormer model use it to the semantic segmentation models
 ------------------------------------------------
 ## Train an Intance Segmentation Model with MMDetection
 
-The last part of the segmentation series, we will cover the intances segmentation model. We will recall some approaches for the instance segmentation problem. We also introduce a efficient library for the detection task `MMDetection`. For that, we will detail how to build the configuration for a training. 
+The last part of the segmentation series, we will cover the intances segmentation model. We will recall some approaches for the instance segmentation problem. We also introduce a efficient library for the detection task: [MMDetection](https://github.com/open-mmlab/mmdetection). MMDetection is an open source object detection toolbox based on PyTorch.
 
+
+<img align="center" width="600"  src="https://habrastorage.org/webt/o9/wk/ae/o9wkaedfqkbfmf1q7csc61mmtkk.png">
+
+Major features of mmdetection:
+
+- Modular Design: One decomposes the detection framework into different components and one can easily construct a customized object detection framework by combining different modules.
+
+- Support of multiple frameworks out of box: The toolbox directly supports popular and contemporary detection frameworks, e.g. Faster RCNN, Mask RCNN, RetinaNet, etc.
+
+- High efficiency: All basic bbox and mask operations run on GPUs. The training speed is faster than or comparable to other codebases, including Detectron2, maskrcnn-benchmark and SimpleDet.
+
+- State of the art: The toolbox stems from the codebase developed by the MMDet team, who won COCO Detection Challenge in 2018, and we keep pushing it forward.
 

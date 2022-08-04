@@ -92,28 +92,13 @@ def make_csv_file(args: Any) -> None:
     valid_frame.to_csv(f"{data_root}/csv_file/valid_info.csv", index=False)
 
 
-def visualize_annotations(images_info: List[Dict], coco: Any):
-    """visualize_annotations is to visualize the annotations of the dataset."""
-    _, axs = plt.subplots(len(images_info), 2, figsize=(30, 15 * len(images_info)))
-    for image_info, ax in zip(images_info, axs):
-        image = io.imread(os.path.join(data_root, image_info["file_name"]))
-        # print(image_info["file_name"])
-        annIds = coco.getAnnIds(imgIds=[image_info["id"]])
-        anns = coco.loadAnns(annIds)
-        ax[0].imshow(image)
-        ax[1].imshow(image)
-        plt.sca(ax[1])
-        coco.showAnns(anns, draw_bbox=True)
-    plt.show()
-
-
 def find_contours(mask: np.ndarray):
     ret, thresh_img = cv2.threshold(mask.astype(np.uint8), 100, 255, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours((thresh_img).astype(np.uint8), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
 
-def get_annotations(train_df: pd.DataFrame):
+def get_annotations(dataframe: pd.DataFrame):
     """get_annotations is to convert a dataframe into the coco format
 
     Args:
@@ -131,7 +116,7 @@ def get_annotations(train_df: pd.DataFrame):
     images = []
     obj_count = 0
 
-    for idx, row in tqdm(train_df.iterrows(), total=len(train_df)):
+    for idx, row in tqdm(dataframe.iterrows(), total=len(dataframe)):
         filename = row.images
 
         images.append(
@@ -190,6 +175,21 @@ def get_json_coco(args) -> None:
         json.dump(train_json, f, ensure_ascii=True, indent=4)
     with open(f"{coco_json}/valid.json", "w+", encoding="utf-8") as f:
         json.dump(valid_json, f, ensure_ascii=True, indent=4)
+
+
+def visualize_annotations(images_info: List[Dict], coco: Any):
+    """visualize_annotations is to visualize the annotations of the dataset."""
+    _, axs = plt.subplots(len(images_info), 2, figsize=(30, 15 * len(images_info)))
+    for image_info, ax in zip(images_info, axs):
+        image = io.imread(os.path.join(data_root, image_info["file_name"]))
+        # print(image_info["file_name"])
+        annIds = coco.getAnnIds(imgIds=[image_info["id"]])
+        anns = coco.loadAnns(annIds)
+        ax[0].imshow(image)
+        ax[1].imshow(image)
+        plt.sca(ax[1])
+        coco.showAnns(anns, draw_bbox=True)
+    plt.show()
 
 
 if __name__ == "__main__":

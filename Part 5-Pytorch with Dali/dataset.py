@@ -31,8 +31,6 @@ class GenericPipeline(Pipeline):
         # self.patch_size = [384,384]
         self.load_to_gpu = kwargs["load_to_gpu"]
 
-        self.resize_one = ops.Resize(device="cpu", resize_x=384, resize_y=384)
-        self.transpose = ops.Transpose(device="cpu", perm=[2, 0, 1])
         self.input_x = self.get_reader(kwargs["imgs"])
         self.input_y = self.get_reader(kwargs["lbls"])
         self.cast = ops.Cast(device="gpu", dtype=types.DALIDataType.FLOAT)
@@ -129,7 +127,7 @@ class TrainPipeline(GenericPipeline):
         return img, lbl
 
 
-class EvalPipeline(GenericPipeline):
+class ValidPipeline(GenericPipeline):
     def __init__(self, batch_size, num_threads, device_id, **kwargs):
         super().__init__(batch_size, num_threads, device_id, **kwargs)
         # self.invert_resampled_y = kwargs["invert_resampled_y"]
@@ -146,7 +144,7 @@ class EvalPipeline(GenericPipeline):
         return img, lbl
 
 
-PIPELINES = {"train": TrainPipeline, "eval": EvalPipeline}
+PIPELINES = {"train": TrainPipeline, "eval": ValidPipeline}
 
 
 class LightningWrapper(DALIGenericIterator):
