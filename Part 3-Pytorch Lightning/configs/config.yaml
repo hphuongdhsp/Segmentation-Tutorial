@@ -12,21 +12,17 @@ model:
   classes: 1
 
 dataloader_type: "pytorch" # "kornia", "dali"
+
 training:
   seed: 42
-  fold: 2
-  max_epochs: 300
-  mixed_precision: True
-  device: "cuda:0"
   freeze_epochs: 1
   learning_rate: 0.001
-  batch_size: 32
+  batch_size: 21
   workers: 4
 
 testing:
-  fold: 2
   phase: "test"
-  batch_size: 32
+  batch_size: 16
   tta: True
   mixed_precision: False
   threshold: 0.39

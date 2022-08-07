@@ -1,10 +1,5 @@
-# Nail Segmentation
-
-
-
+The source code of post [Segmentation Model-Part III - Training deep learning segmentation models in Pytorch Lightning](https://hphuongdhsp.github.io/ml-blog/pytorchlightning/semanticsegmentation/deeplearning/2022/08/04/segmentation-model-part3.html)
 ## Installation 
-
-
 ## First: Install the Python environment using Conda
 
 
@@ -15,7 +10,7 @@ Note that you will likely need to close and re-open your terminal.
 Afterward, you should have ability to run the `conda` command in your terminal.
 
 Run 
-```
+```sh
 make conda-update
 ``` 
 to create an environment called `nail`, as defined in `environment.yml`.
@@ -27,11 +22,10 @@ again to get the latest changes.
 Next, activate the conda environment.
 
 ```sh
-conda activate nail
+conda activate segmentation-pt
 ```
 
-**IMPORTANT**: every time you work in this directory, make sure to start your session with `conda activate nail`.
-
+> Important: every time you work in this directory, make sure to start your session with `conda activate segmentation-pt`.
 #### Next: install Python packages
 
 Next, install all necessary Python packages by running `make pip-tools`
@@ -46,12 +40,12 @@ If you add, remove, or need to update versions of some requirements, edit the `.
 
 
 ## Dataset 
-Download the data from [link](https://storage.torus.lan/sharing/O4eZXKrxJ) and put it in `basepath`. 
+Download the data from [link](https://drive.google.com/file/d/1qBLwdQeu9nvTw70E46XNXMciB0aKsM7r/view) and put it in `data_root`. 
 
-The dataset with be stored at the "basepath", and were organized as the following
+The dataset with be stored at the "data_root", and were organized as the following
 
-```
-├── base_path 
+```bash
+├── data_root 
 │   ├── train
 │   │   ├── images
 │   │   ├── masks
@@ -84,36 +78,48 @@ model:
 
 training:
   seed: 42
-  fold: 2
-  max_epochs: 300
-  mixed_precision: True
-  device: "cuda:0"
   freeze_epochs: 1
   learning_rate: 0.001
-  batch_size: 16
+  batch_size: 32
   workers: 4
 
-testing:
-  fold: 2
-  phase: "test"
-  batch_size: 16
-  tta: True
-  mixed_precision: False
-  threshold: 0.39
-  device: "cuda:0"
+
+checkpoint_callback:
+  type: pytorch_lightning.callbacks.ModelCheckpoint
+  filename: "timm-efficientnet-b4"
+  monitor: valid_loss
+  verbose: True
+  save_top_k: 1
+  save_last: True
+  mode: min
+
+trainer:
+  type: pytorch_lightning.Trainer
+  gpus: [0]
+  max_epochs: 300
+  benchmark: True
+  precision: 16
+  progress_bar_refresh_rate: 1
+  gradient_clip_val: 5.0
+  auto_lr_find: True
+  weights_summary: "top"
+  limit_train_batches: 1.0
 
 ```
-To continue, we first change the configuration that is suitable for the local machine. For configuration of local machine, we recommend to change 
 
-+ batch_size
-+ device
+Here: 
+- model: the model parameters
+- training: dataset and model module parameters
+- checkpoint callback parameters
+- trainer: trainer parameters
+
 
 ## Data preparation 
 
-We will
+We use
 
-```
-python data_preparation.py --base_path base_path
+```sh
+python data_preparation.py --data_root data_root --work_dir work_dir --config_path configs/comfig.yaml
 ```
 
 In this step we do: 
@@ -124,43 +130,23 @@ In this step we do:
 ## Training model 
 
 We do 
-
 ```
-python train.py --base_path base_path --weight_path weight_path --config_path config_path --resume False
+python train.py --data_root data_root --work_dir work_dir --config_path configs/comfig.yaml --resume False
 ```
 
 where 
-+ the base_path is the folder that you stores the data 
-+ weight_path is the path of folder that you want to save weights
++ the data_root is the folder that you stores the data 
++ work_dir is the path of the logs and weights
 + config_path is the path of config file, in this repository: config_path = `./configs/config.yaml`
 
+## Inference
 
-These parameters is saved as the function `get_args` in `utils`
-
-To simplicity, we use command:
-
-```
-python train.py --base_path base_path --weight_path ./weights --config_path ./configs/config.yaml --resume False
-```
-
-## CI manually 
-
-To do CI manually, we use command
+We first convert the pytorch weight into the `onnx` weight
 
 ```
-make lint
+python converter.py
 ```
 
-Remark to use onnx tensor rtx
-```
-import onnx
-import onnx_tensorrt.backend as backend
-import numpy as np
+The weight will be save at `{work_dir}/{experiment_name}/weight/{model_name}.onnx`
 
-model = onnx.load("/path/to/model.onnx")
-engine = backend.prepare(model, device='CUDA:1')
-input_data = np.random.random(size=(32, 3, 224, 224)).astype(np.float32)
-output_data = engine.run(input_data)[0]
-print(output_data)
-print(output_data.shape)
-```
+Then we can test a simple API of the onnx weight by uisng functions in `onnx_api.py` file

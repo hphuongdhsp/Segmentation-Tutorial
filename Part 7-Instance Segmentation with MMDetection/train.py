@@ -42,7 +42,7 @@ def main():
         workers_per_gpu=2,
         train=dict(
             type="CocoDataset",
-            img_prefix=args.data_root,
+            img_prefix=data_root,
             classes=cfg.classes,
             ann_file=f"{data_root}/annotations/train.json",
             pipeline=cfg.train_pipeline,

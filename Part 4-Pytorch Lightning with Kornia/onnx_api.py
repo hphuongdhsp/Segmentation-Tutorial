@@ -1,25 +1,39 @@
 import os
-from collections import defaultdict
-from pathlib import Path
-
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import onnx
 import onnxruntime as ort
 import torch
 import torch.onnx
-import tqdm
-from albumentations import *
-from torch.utils.data import DataLoader, Dataset
 
+from typing import Union, List
+from torch.utils.data import Dataset
+import yaml
+from addict import Dict as Adict
+from pathlib import Path
 from transform import valid_transform
-from utils import getListOfFiles, plot_prediction
+from utils import getListOfFiles, plot_prediction, get_args
 
-FILE_PATH = str(Path(__file__).parent.resolve())
+args = get_args()
+data_root = args.data_root
+work_dir = args.work_dir
+with open(args.config_path) as file:
+    config = Adict(yaml.load(file, Loader=yaml.SafeLoader))
+
+providers = [
+    (
+        "CUDAExecutionProvider",
+        {
+            "device_id": 0,
+            "arena_extend_strategy": "kNextPowerOfTwo",
+            "cudnn_conv_algo_search": "EXHAUSTIVE",
+            "do_copy_in_default_stream": True,
+        },
+    )
+]
 
 
-def sigmoid_function(z):
+def sigmoid_function(z: np.ndarray):
     """this function implements the sigmoid function, and
     expects a numpy array as argument"""
 
@@ -29,7 +43,7 @@ def sigmoid_function(z):
         return None
 
 
-def get_image(image_or_path):
+def get_image(image_or_path: Union[np.ndarray, Path, str]):
     """Reads an image from file or array/tensor and converts it to RGB (H,W,3).
     Arguments:
         tensor {Sstring, numpy.array or torch.tensor} -- [the input image or path to it]
@@ -49,7 +63,7 @@ def get_image(image_or_path):
 
 
 class InferenceDataset(Dataset):
-    def __init__(self, list_image, transform=valid_transform()):
+    def __init__(self, list_image: List[Union[str, np.ndarray]], transform=valid_transform()):
         self.dataset = list_image
         self.transform = transform
 
@@ -78,21 +92,8 @@ class InferenceDataset(Dataset):
         return len(self.dataset)
 
 
-providers = [
-    (
-        "CUDAExecutionProvider",
-        {
-            "device_id": 0,
-            "arena_extend_strategy": "kNextPowerOfTwo",
-            "cudnn_conv_algo_search": "EXHAUSTIVE",
-            "do_copy_in_default_stream": True,
-        },
-    )
-]
-
-
 class NailSegmentationOnnx:
-    def __init__(self, TTA=False, batch_size=16, threshold=0.5):
+    def __init__(self, onnx_path: str, TTA: bool = False, batch_size: int = 16, threshold: float = 0.5):
 
         """
         args:
@@ -103,56 +104,55 @@ class NailSegmentationOnnx:
         """
         self.threshold = threshold
         self.batch_size = batch_size
-        self.ort_session = ort.InferenceSession(
-            os.path.join(FILE_PATH, "models/timm-efficientnet-b4.onnx"), providers=providers
-        )
+        self.ort_session = ort.InferenceSession(os.path.join(onnx_path), providers=providers)
         print(self.ort_session.get_providers())
-        onnx.checker.check_model(onnx.load(os.path.join(FILE_PATH, "models/timm-efficientnet-b4.onnx")))
+        onnx.checker.check_model(onnx.load(os.path.join(onnx_path)))
         self.TTA = TTA
         self.transform = valid_transform(p=1)
 
     def preprocess_batch_data(self, list_images):
+        """The function to preprocess the batch data
+
+        Args:
+            list_images List[Union[str, np.ndarray]]: List of images to preprocess
+
+        Returns:
+            dataset: dataset of preprocessed images
+        """
+
         dataset = InferenceDataset(list_images, transform=self.transform)
-        loader = DataLoader(
-            dataset,
-            self.batch_size,
-            shuffle=False,
-            num_workers=4,
-            pin_memory=True,
-            collate_fn=dataset.collate,
-        )
-        return loader
+        return dataset
 
     def predict_by_batch(self, list_image):
         loader = self.preprocess_batch_data(list_image)
         pred_masks = []
-        for images, infos in tqdm.tqdm(loader):
-            # print(images)
-            ort_inputs = {"images": images}
-            ort_inputs = self.ort_session.run(None, ort_inputs)
-            logits = ort_inputs[0]
-            preds = sigmoid_function(logits)
-            if self.TTA:
-                flips = [[-1]]
-                for aug in flips:
+        images, infos = loader.collate([loader[i] for i in range(len(loader))])
 
-                    ort_inputs = {"images": np.flip(images, aug)}
-                    ort_inputs = self.ort_session.run(None, ort_inputs)
-                    logits = ort_inputs[0]
-                    logits = np.flip(logits, aug)
-                    preds += sigmoid_function(logits)
+        ort_inputs = {"image": images}
+        ort_inputs = self.ort_session.run(None, ort_inputs)
+        logits = ort_inputs[0]
+        preds = sigmoid_function(logits)
+        if self.TTA:
+            flips = [[-1]]
+            for aug in flips:
 
-                preds /= 1 + len(flips)
+                ort_inputs = {"image": np.flip(images, aug)}
+                ort_inputs = self.ort_session.run(None, ort_inputs)
+                logits = ort_inputs[0]
+                logits = np.flip(logits, aug)
+                preds += sigmoid_function(logits)
 
-            preds = (np.transpose(preds, (0, 2, 3, 1)) > self.threshold) * 1
+            preds /= 1 + len(flips)
 
-            for (pred, info) in zip(preds, infos):
-                fname = info["img_path"]
-                shape = info["img_size"]
+        ohe_labels = (np.transpose(preds, (0, 2, 3, 1)) > self.threshold) * 1
 
-                pred = cv2.resize(pred.astype("float32"), (shape[1], shape[0]))
+        for (pred, info) in zip(ohe_labels, infos):
+            fname = info["img_path"]
+            shape = info["img_size"]
 
-                pred_masks[fname].append([pred])
+            pred = cv2.resize(pred.astype("float32"), (shape[1], shape[0]))
+
+            pred_masks.append(pred.astype(np.uint8))
 
         return pred_masks
 
@@ -160,12 +160,19 @@ class NailSegmentationOnnx:
 def test_api_onnx(images_path: str) -> None:
     r"""This function is to test the Human Part Segmentatation api"""
 
-    BDP = NailSegmentationOnnx(TTA=False, batch_size=16)
+    args = get_args()
+    work_dir = args.work_dir
+    with open(args.config_path) as file:
+        config = Adict(yaml.load(file, Loader=yaml.SafeLoader))
+    weight_dir = os.path.join(work_dir, config.experiment_name, "weight")
+    onnx_path = os.path.join(weight_dir, config.checkpoint_callback.filename + ".onnx")
+
+    BDP = NailSegmentationOnnx(onnx_path=onnx_path, TTA=False, batch_size=16)
     images_list = getListOfFiles(images_path)
     print(images_list)
 
-    dict_prediction = BDP.predict_by_batch(images_list)
-    plot_prediction(dict_prediction)
+    list_preds = BDP.predict_by_batch(images_list)
+    plot_prediction(list_preds, images_list)
 
 
 if __name__ == "__main__":

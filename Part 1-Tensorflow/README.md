@@ -1,17 +1,6 @@
 
-The source code of the Segmentaion training by TensorFlow
+The source code of the post: [Segmentation Model-Part I - Training deep learning segmentation models in Tensorflow](https://hphuongdhsp.github.io/ml-blog/tensorflow/semanticsegmentation/deeplearning/2022/08/02/segmentation-model-part1.html).
 
-## Content 
-
-- Installation
-  - Install the Python environment using Conda
-  - Install Python packages
-- Dataloader
-- Training 
-  - Dataset
-  - Data preparation
-  - Training model
-  
 # Installation
  
 ## 1.1 Install the Python environment using Conda
@@ -245,112 +234,7 @@ with strategy.scope():
 
 The weight of model will be save in `models` folder 
 
--------                                            
-# Training with balanced data
 
-The main goal of this part is to guide how to use tensorflow.data to do balanced data when loading. 
-
-More precisely, our training data is splited into 6 subsets: 
-```
-├── base_path 
-│   ├── train
-│   │   ├── images
-│   │   │   ├── 0
-│   │   │   ├── 1
-│   │   │   ├── 2
-│   │   │   ├── 3
-│   │   │   ├── 4
-│   │   ├── masks
-│   │   │   ├── 0
-│   │   │   ├── 1
-│   │   │   ├── 2
-│   │   │   ├── 3
-│   │   │   ├── 4
-
-```
-Using the data_processing.py script, we have exported six CSV files `train0.csv`, `train1.csv`, ... , `train6.csv`
-to store the path of images of six subfolders, respectively.
-
-Here we will use `tf.data.experimental.sample_from_datasets` to do balanced data. The purpose is to have the probability of picking sample equivalent for  all subfolders.
-
-## How to use `tf.data.experimental.sample_from_datasets`
-
-### Get filenames in subfolder 
-We first name the csv files: 
-```python 
-train0_csv_dir = f"{data_root}/csv_file/train0.csv"
-train1_csv_dir = f"{data_root}/csv_file/train1.csv"
-train2_csv_dir = f"{data_root}/csv_file/train2.csv"
-train3_csv_dir = f"{data_root}/csv_file/train3.csv"
-train4_csv_dir = f"{data_root}/csv_file/train4.csv"
-train5_csv_dir = f"{data_root}/csv_file/train5.csv"
-```
-
-Thank to the `load_data_path` function, we can get list of path of images in each subfolder 
-
-```
-train0_dataset = load_data_path(data_root, train0_csv_dir, "train")
-train1_dataset = load_data_path(data_root, train1_csv_dir, "train")
-train2_dataset = load_data_path(data_root, train2_csv_dir, "train")
-train3_dataset = load_data_path(data_root, train3_csv_dir, "train")
-train4_dataset = load_data_path(data_root, train4_csv_dir, "train")
-```
-
-Using tf_dataset to decode each list of paths into the form of input model. Remark mark that we don't shuffle and batch those dataset. 
-
-```python
-train0_loader = tf_dataset(
-    dataset=train0_dataset,
-    shuffle=False,
-    batch_size=None,
-    transforms=train_transform(),
-    dtype = dtype
-    device = args.device
-    )
-```
-Here `dtype` is defined as `tf.float16` or `tf.float32`, depend on the mix_precision
-
-
-------
-`The cool thing about this method is that we can use different augmentation for different sub-dataset`
-
-
-We then shuffle and repeat them
-
-```python 
-train0_loader = train0_loader.apply(
-            tf.data.experimental.shuffle_and_repeat(100000, count=epochs)
-        )
-```
-
-Finally, we use the `tf.data.experimental.sample_from_datasets` function to do the balanced data. 
-
-```python
-train_loader = tf.data.experimental.sample_from_datasets(
-    data_loaders, weights=weights, seed=None
-)
-```
-
-where: 
-
-```python
-data_loaders = [train0_loader,train1_loader,train2_loader,train3_loader,train4_loader]
-```
-and 
-
-```
-weights = [1 / len(data_loaders)] * len(data_loaders)
-```
-
-`The weights (Optional): A list or Tensor of len(datasets) floating-point values where weights[i] represents the probability to sample from datasets[i], or a tf.data.Dataset object where each element is such a list. Defaults to a uniform distribution across datasets.`
-
-## Training
-
-To training, we use command line
-
-```
-python train_with_balance_data.py --data_root data_root --work_dir work_dir --device 0 1 --batch_size 16  --epochs 100
-```
 ## Using log
 The defaut log is `None`, we also support writing the training log with:  `wandb` and `tensorboard`
 ### Wandb

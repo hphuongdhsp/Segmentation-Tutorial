@@ -214,12 +214,12 @@ def get_contours(mask):
     return contours
 
 
-def plot_prediction(dict_prediction) -> None:
+def plot_prediction(list_preds: List[np.ndarray], images_list: List[Union[str, np.ndarray]]) -> None:
 
-    for fname, pred in dict_prediction.items():
-
-        image = cv2.imread(fname)
-        mask = (pred[0][0]) * 255
+    for (i, pred) in enumerate(list_preds):
+        if isinstance(images_list[i], str):
+            image = cv2.imread(images_list[i])
+        mask = pred * 255
         mask = get_smooth_mask(mask, 1, 2)
 
         plt.title("Nail Prediction")

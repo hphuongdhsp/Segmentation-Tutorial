@@ -16,6 +16,8 @@ def main(args: Any) -> None:
     with open(args.config_path) as file:
         config = Adict(yaml.load(file, Loader=yaml.SafeLoader))
     batch_size = config.training.batch_size
+    workers = config.training.workers
+
     csv_path = f"{data_root}/csv_file"
 
     # GET MODEL + DATALOADER
@@ -30,7 +32,7 @@ def main(args: Any) -> None:
         csv_path=csv_path,
         test_path="",
         batch_size=batch_size,
-        num_workers=4,
+        num_workers=workers,
     )
 
     model_lighning = LitNailSegmentation(model=model, learning_rate=config.training.learning_rate)

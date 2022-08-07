@@ -10,8 +10,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-IMG_EXTENSIONS = [".jpg", ".jpeg", ".png"]
-
 
 def get_args() -> Any:
     parser = argparse.ArgumentParser()
@@ -208,7 +206,7 @@ def get_smooth_mask(mask: np.ndarray, open_kernel: int = 5, closing_kernel: int 
 
 
 def get_contours(mask: np.ndarray):
-    mask = np.uint8(mask)   
+    mask = np.uint8(mask)
     # im2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     try:
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
