@@ -12,7 +12,7 @@ import yaml
 from addict import Dict as Adict
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
-
+from transform import resize
 from utils import get_all_items, get_args, has_file_allowed_extension, img2tensor, read_image, read_mask
 
 

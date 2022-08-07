@@ -1,11 +1,10 @@
 import torch
 import yaml
 from addict import Dict
+from loss import binary_dice_coefficient, binary_mean_iou, symmetric_lovasz
 from pytorch_lightning import Callback, LightningModule
 from torch import nn
 from torchsummary import summary
-
-from loss import binary_dice_coefficient, binary_mean_iou, symmetric_lovasz
 from transform import train_transform_K, valid_transform_K
 from utils import get_args, object_from_dict
 
